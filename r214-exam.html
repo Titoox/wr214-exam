@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R214 — Entraînement Examen</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0c0e;--s1:#111315;--s2:#181a1d;--s3:#1e2124;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#eceae5;--muted:#6b6a67;--muted2:#9a9896;
+  --accent:#e8b86d;--accent2:#f0cc90;
+  --green:#4d9966;--red:#b85550;--blue:#5585b5;--orange:#c97b3a;
+}
+html{-webkit-text-size-adjust:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(11,12,14,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 0.75rem;display:flex;align-items:stretch;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+nav::-webkit-scrollbar{display:none;}
+.nav-btn{
+  padding:0.85rem 0.9rem;background:none;border:none;
+  color:var(--muted2);font-family:'Syne',sans-serif;
+  font-size:0.7rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;
+  cursor:pointer;white-space:nowrap;
+  border-bottom:2px solid transparent;transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.nav-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* HERO */
+.hero{padding:1.5rem 1rem 1.25rem;border-bottom:1px solid var(--border);}
+.hero-tag{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:0.4rem;}
+.hero h1{font-family:'Instrument Serif',serif;font-size:clamp(1.5rem,6vw,2.6rem);font-weight:400;line-height:1.15;margin-bottom:0.4rem;}
+.hero p{color:var(--muted2);font-size:0.8rem;line-height:1.5;}
+
+/* SECTIONS */
+.section{display:none;padding:1rem 0.75rem 5rem;max-width:860px;margin:0 auto;}
+.section.active{display:block;}
+
+/* ALERTE */
+.alert{
+  border-radius:10px;padding:0.8rem 1rem;
+  font-size:0.78rem;line-height:1.55;
+  margin-bottom:1.25rem;
+}
+.alert-red{background:rgba(184,85,80,0.1);border:1px solid rgba(184,85,80,0.3);color:#e8a09d;}
+.alert-blue{background:rgba(85,133,181,0.08);border:1px solid rgba(85,133,181,0.25);color:#9bb8d4;}
+
+/* SCORE BAR */
+.score-bar{
+  background:var(--s2);border:1px solid var(--border2);
+  border-radius:10px;padding:0.85rem 1rem;
+  display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;
+  margin-bottom:1.25rem;
+}
+.score-num{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:500;color:var(--accent);line-height:1;}
+.score-label{font-size:0.72rem;color:var(--muted2);}
+.score-reset{
+  margin-left:auto;padding:0.4rem 0.8rem;
+  background:none;border:1px solid var(--border2);border-radius:6px;
+  color:var(--muted2);font-family:'Syne',sans-serif;font-size:0.68rem;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  white-space:nowrap;
+}
+.score-reset:active{border-color:var(--red);color:var(--red);}
+
+/* QUESTION CARD */
+.q-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;margin-bottom:0.85rem;overflow:hidden;
+  transition:border-color 0.2s;
+}
+.q-card.answered-ok{border-color:var(--green);}
+.q-card.answered-ko{border-color:var(--red);}
+
+.q-header{padding:0.85rem 1rem 0.65rem;}
+.q-num{font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:0.35rem;}
+.q-text{font-size:0.84rem;line-height:1.55;color:var(--text);}
+
+/* CODE BLOCK dans question */
+.q-code{
+  background:var(--s3);border:1px solid var(--border2);
+  border-radius:8px;padding:0.65rem 0.85rem;
+  font-family:'DM Mono',monospace;
+  font-size:0.68rem;
+  line-height:1.7;color:var(--accent2);
+  overflow-x:auto;white-space:pre;
+  margin:0.65rem 0 0;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* OPTIONS */
+.q-options{padding:0.4rem 0.85rem 0.85rem;display:flex;flex-direction:column;gap:0.35rem;}
+.opt{
+  display:flex;align-items:flex-start;gap:0.65rem;
+  padding:0.6rem 0.75rem;
+  border:1px solid var(--border);border-radius:8px;
+  background:var(--s2);cursor:pointer;
+  transition:border-color 0.15s,background 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.opt:active{background:var(--s3);}
+.opt input[type=checkbox]{
+  width:17px;height:17px;flex-shrink:0;margin-top:1px;
+  accent-color:var(--accent);cursor:pointer;
+}
+.opt-label{font-size:0.8rem;line-height:1.5;cursor:pointer;flex:1;word-break:break-word;}
+.opt-code{font-family:'DM Mono',monospace;font-size:0.71rem;}
+
+/* États validation */
+.opt.correct-answer{border-color:var(--green);background:rgba(77,153,102,0.1);}
+.opt.wrong-selected{border-color:var(--red);background:rgba(184,85,80,0.1);}
+.opt.missed-answer{border-color:var(--orange);background:rgba(201,123,58,0.08);}
+
+/* ACTIONS */
+.q-actions{padding:0 0.85rem 0.85rem;display:flex;gap:0.6rem;flex-wrap:wrap;}
+.btn-valider{
+  flex:1;min-width:100px;
+  padding:0.7rem 1rem;border:none;border-radius:8px;
+  background:var(--accent);color:#000;
+  font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:700;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.btn-valider:active{opacity:0.8;}
+.btn-valider:disabled{opacity:0.35;cursor:default;}
+.btn-reset-q{
+  padding:0.7rem 0.9rem;border:1px solid var(--border2);border-radius:8px;
+  background:none;color:var(--muted2);
+  font-family:'Syne',sans-serif;font-size:0.75rem;
+  cursor:pointer;display:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-reset-q.visible{display:inline-block;}
+
+/* EXPLICATION */
+.q-explication{
+  display:none;
+  margin:0 0.85rem 1rem;
+  background:var(--s3);border:1px solid var(--border2);
+  border-radius:10px;padding:0.85rem;
+  font-size:0.78rem;line-height:1.65;color:var(--muted2);
+}
+.q-explication.visible{display:block;}
+.q-explication strong{color:var(--text);}
+.q-explication code{
+  font-family:'DM Mono',monospace;font-size:0.72rem;
+  background:rgba(255,255,255,0.06);padding:0.1rem 0.3rem;border-radius:4px;color:var(--accent2);
+}
+.q-explication .result-ok{color:var(--green);font-weight:700;margin-bottom:0.4rem;display:block;}
+.q-explication .result-ko{color:var(--red);font-weight:700;margin-bottom:0.4rem;display:block;}
+.q-explication ul{list-style:none;padding:0;margin-top:0.4rem;}
+.q-explication ul li{padding:0.2rem 0;padding-left:1rem;position:relative;}
+.q-explication ul li::before{content:'→';position:absolute;left:0;color:var(--accent);font-size:0.68rem;top:0.25rem;}
+
+/* CSS inutilisé — nettoyé */
+/* .prev-intro .prev-card .prev-header etc → supprimés */
+
+/* DESKTOP */
+@media(min-width:600px){
+  .section{padding:1.5rem 1.5rem 5rem;}
+  .q-header{padding:1rem 1.25rem 0.75rem;}
+  .q-code{font-size:0.74rem;padding:0.75rem 1rem;}
+  .q-options{padding:0.5rem 1.25rem 1rem;}
+  .opt{padding:0.65rem 0.85rem;}
+  .opt-label{font-size:0.83rem;}
+  .opt-code{font-size:0.75rem;}
+  .q-actions{padding:0 1.25rem 1rem;}
+  .q-explication{margin:0 1.25rem 1.25rem;font-size:0.8rem;}
+  .score-num{font-size:1.4rem;}
+  .btn-valider{flex:none;}
+}
+@media(min-width:900px){
+  .section{padding:2rem 2rem 5rem;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <button class="nav-btn active" onclick="showSection('qcm',this)">QCM Année dernière</button>
+  <button class="nav-btn" onclick="showSection('prev',this)">⚡ Prévisions demain</button>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">R214 — Base de données & PHP · Examen demain</div>
+  <h1>Entraînement<br>Examen R214</h1>
+  <p>QCM copié de l'exam de l'an dernier + prévisions basées sur ton code SAE203.</p>
+</div>
+
+<!-- ======= QCM ======= -->
+<section class="section active" id="qcm">
+
+  <div class="alert alert-red">
+    ⚠️ <strong>Points négatifs :</strong> une mauvaise réponse cochée = −0,33 pts max. Ne réponds pas au hasard. Il peut y avoir <strong>plusieurs bonnes réponses</strong> ou <strong>aucune</strong> (dans ce cas cocher "Aucune de ces réponses n'est correcte").
+  </div>
+
+  <div class="score-bar">
+    <div>
+      <div class="score-num" id="score-display">0 / 0</div>
+      <div class="score-label">questions validées correctement</div>
+    </div>
+    <button class="score-reset" onclick="resetAll()">Tout recommencer</button>
+  </div>
+
+  <div id="qcm-container"></div>
+
+</section>
+
+<!-- ======= PRÉVISIONS ======= -->
+<section class="section" id="prev">
+
+  <div class="alert alert-blue">
+    ⚡ <strong>Questions probables demain</strong> — basées sur ton code SAE203 et les patterns de l'exam de l'an dernier. <span style="color:var(--red)">🔴 HOT</span> = quasi-certain.
+  </div>
+
+  <div class="score-bar">
+    <div>
+      <div class="score-num" id="score-display-prev">0 / 0</div>
+      <div class="score-label">questions validées correctement</div>
+    </div>
+    <button class="score-reset" onclick="resetAllPrev()">Tout recommencer</button>
+  </div>
+
+  <div id="prev-container"></div>
+
+</section>
+
+<script>
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ─── DONNÉES QCM ─────────────────────────────────────────────────────────────
+// correct: tableau des index (0-based) des bonnes réponses
+const QCM = [
+{
+  num: 1,
+  text: "Soit l'extrait de code source suivant :",
+  code: `<?php
+$bdd = new ('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');
+$req2='SELECT * FROM editeurs';
+$resultat2 = $bdd->requete($req2);
+while( $un_editeur = $resultat2->fetch() ) {
+    echo '<option value="'.$un_editeur['auteur_id'].'">'.$un_editeur['auteur_nom'].'</option>';
+}
+?>`,
+  options: [
+    "ce type de code se trouve dans la page reponse_recherche.php",
+    "ce type de code se trouve dans la page table1_gestion.php",
+    "il y a une erreur de syntaxe à la ligne 7",
+    "ce type de code se trouve dans la page table1_new_form.php",
+    "il y a une erreur de syntaxe à la ligne 5 (->requete() n'existe pas, c'est ->query())",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [4],
+  explication: `<strong>Ligne 2 (new sans PDO)</strong> et <strong>ligne 4 (->requete() n'existe pas)</strong> sont les vraies erreurs. La méthode correcte est <strong>->query()</strong>. De plus <code>new</code> sans <code>PDO</code> est invalide. L'option "erreur ligne 5" est la plus proche car ->requete() n'existe pas. La ligne 7 est syntaxiquement correcte.`
+},
+{
+  num: 2,
+  text: "Quelles sont les requêtes sans erreurs :",
+  options: [
+    "INSERT INTO albums(album_titre,album_serie) VALUES('Top plus', 'les MMIs');",
+    "UPDATE FROM albums SET album_prix = 20 WHERE album_id=52;",
+    "DELETE album_titre FROM albums WHERE album_id = 43;",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0],
+  explication: `<ul>
+<li><strong>Option A ✓</strong> : INSERT INTO correct — table, colonnes, VALUES, tout bon.</li>
+<li><strong>Option B ✗</strong> : UPDATE n'utilise pas FROM. Syntaxe correcte : <code>UPDATE albums SET ... WHERE ...</code></li>
+<li><strong>Option C ✗</strong> : DELETE ne précise pas de colonne. Syntaxe : <code>DELETE FROM albums WHERE ...</code></li>
+</ul>`
+},
+{
+  num: 3,
+  text: "Soit l'extrait de code source suivant :",
+  code: `$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');
+$requete = 'SELECT album_titre,album_prix,auteur_nom FROM albums INNER JOIN auteurs ON auteurs.auteur_id = albums._auteur_id';
+$tous = $bdd->query($requete);
+while($ligne = $bdd->fetch() )   // ligne 6
+{
+    echo '<tr><td>'.$ligne['album_titre'].'</td>...';
+}`,
+  options: [
+    "il y a une erreur à la ligne 8",
+    "il n'y a pas d'erreur de syntaxe",
+    "il y a une erreur à la ligne 6",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [2],
+  explication: `<strong>Ligne 6 ✗</strong> : on appelle <code>$bdd->fetch()</code> alors que fetch() s'appelle sur le <strong>résultat</strong> de la requête. Il faut <code>$tous->fetch()</code>. <code>$bdd</code> est la connexion PDO, pas le résultat.`
+},
+{
+  num: 4,
+  text: "Dans l'analyse de cours, soit le schéma en annexe 1 (relation album ↔ auteur avec table de jonction) :",
+  options: [
+    "en A: 1,1 et en B: 1,1",
+    "en A: 1,1 et en B: 1,n",
+    "en A: 1,n et en B: 0,n",
+    "en A: 0,n et en B: 1,n",
+    "en A: 1,n et en B: 1,1",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [2],
+  explication: `Dans une relation album ↔ auteur (many-to-many via table de jonction) : un auteur peut créer <strong>plusieurs albums</strong> (1,n) et un album peut être créé par <strong>0 ou plusieurs auteurs</strong> (0,n). La cardinalité 1,n / 0,n est classique pour ce type de relation.`
+},
+{
+  num: 5,
+  text: "Quel outil avez-vous pu utiliser pour gérer l'affichage des informations sous forme de tableau dans la page table1_gestion.php ?",
+  options: [
+    "JqueryTable",
+    "DataTable",
+    "ListingTable",
+    "WhileTable",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<strong>DataTables</strong> est le plugin jQuery classique utilisé dans les TPs pour afficher des tableaux avec tri, pagination et recherche. C'est l'outil enseigné en cours pour la page de gestion admin.`
+},
+{
+  num: 6,
+  text: "Dans votre site SAE203, quelles sont les propositions vraies :",
+  options: [
+    "Dans la page listing.php, il y a une requête de type \"SELECT ... FROM ...\"",
+    "Dans la page form_recherche.php, il y a une requête de type \"SELECT ... FROM ...\"",
+    "Dans la page reponse_recherche.php, il y a une requête de type \"INSERT INTO...\"",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0],
+  explication: `<ul>
+<li><strong>listing.php ✓</strong> : contient un SELECT avec LEFT JOIN sur marques et typesmode.</li>
+<li><strong>form_recherche.php ✗</strong> : c'est juste un formulaire HTML, aucune requête SQL.</li>
+<li><strong>reponse_recherche.php ✗</strong> : contient un SELECT (recherche LIKE), pas un INSERT.</li>
+</ul>`
+},
+{
+  num: 7,
+  text: "Soit le schéma en annexe 2, quel est le MLD correspondant :",
+  options: [
+    "apparternir(#art_ref, #car_code) / fournisseurs(four_code,...) / article(art_ref,...,#four_code,#cat_code) / disposer(#art_ref,#mag_code,art_stock) / magasins(mag_code,mag_nom,mag_surf,#art_ref)",
+    "en A: la cardinalité est 0,N",
+    "en A: la cardinalité est 1,1",
+    "disposer(#dispo_code,art_stock) / magasins(mag_code,...) / categories(cat_code,cat_lib) / categories(cat_code,cat_lib,#art_ref) / article(art_ref,...,#four_code,#cat_code,#mag_code) / fournisseurs(four_code,...,#art_ref)",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0],
+  explication: `Dans un MLD : une relation many-to-many génère une table de jonction avec les deux clés étrangères. <strong>disposer(#art_ref, #mag_code, art_stock)</strong> est correct pour stocker le stock par article ET par magasin. La clé étrangère de magasin ne va pas dans la table article (ce serait une relation 1-n, pas n-n).`
+},
+{
+  num: 8,
+  text: "Soit le schéma en annexe 1 (en retrouvant les cardinalités), quel est le MLD correspondant :",
+  options: [
+    "album(bd_id,...,#auteur_id) / auteur(auteur_id,...,#bd_id)",
+    "creer(#bd_id,#auteur_id) / auteur(auteur_id,...) / album(bd_id,...)",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `Relation <strong>many-to-many</strong> entre album et auteur → table de jonction <code>creer(#bd_id, #auteur_id)</code>. Les deux tables album et auteur n'ont pas de clé étrangère l'une vers l'autre. Si on met #auteur_id dans album, ça implique qu'un album n'a qu'un auteur (1-n), ce qui est faux ici.`
+},
+{
+  num: 9,
+  text: "Dans votre site SAE203, quelles sont les propositions vraies :",
+  options: [
+    "Dans la page table1_new_valide.php, il y a au moins une requête de type \"UPDATE ... SET...\"",
+    "Dans la page table1_gestion.php, il y a au moins une requête de type \"SELECT ... FROM...\"",
+    "Dans la page table1_new_form.php, il y a au moins une requête de type \"SELECT ... FROM...\"",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<ul>
+<li><strong>table1_new_valide.php ✗</strong> : contient un <code>INSERT INTO marques</code>, pas un UPDATE.</li>
+<li><strong>table1_gestion.php ✓</strong> : contient un <code>SELECT * FROM marques</code> (avec filtre LIKE optionnel).</li>
+<li><strong>table1_new_form.php ✗</strong> : c'est juste le formulaire HTML d'ajout, aucune requête SQL.</li>
+</ul>`
+},
+{
+  num: 10,
+  text: "Quand on valide une recherche sur la page form_recherche.php (en ayant tapé 'bob'), on voit apparaître dans l'URL :",
+  options: [
+    "http://.../sae203/listing.php",
+    "http://.../sae203/form_recherche_recherche.php?bob",
+    "http://.../sae203/reponse_recherche.php?auteur=bob",
+    "http://.../sae203/form_recherche_recherche.php?auteur=bob",
+    "http://.../sae203/reponse_recherche.php?bob",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [5],
+  explication: `Dans TON code, le formulaire form_recherche.php a <code>action="reponse_recherche.php" method="get"</code> et le champ input s'appelle <strong>texte</strong> (pas "auteur"). L'URL serait donc : <code>reponse_recherche.php?texte=bob</code>. Cette option n'existe pas dans le QCM → <strong>Aucune de ces réponses n'est correcte</strong>.`
+},
+{
+  num: 11,
+  text: "Quelles sont les requêtes sans erreurs :",
+  options: [
+    "UPDATE * FROM albums WHERE album_id=43;",
+    "SELECT * FROM albums INNER JOIN auteurs ON albums._auteur_id_ = auteurs.auteur_id;",
+    "SELECT * FROM albums WHERE album_titre LIKE '%bob%';",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [2],
+  explication: `<ul>
+<li><strong>Option A ✗</strong> : UPDATE n'utilise pas FROM ni *. Syntaxe : <code>UPDATE table SET col=val WHERE ...</code></li>
+<li><strong>Option B ✗</strong> : INNER JOIN syntaxiquement valide mais les noms de colonnes avec underscores autour (_auteur_id_) sont suspects / incorrects.</li>
+<li><strong>Option C ✓</strong> : SELECT avec LIKE et wildcard % est parfaitement correct.</li>
+</ul>`
+},
+{
+  num: 12,
+  text: "Quelles sont les requêtes sans erreurs :",
+  options: [
+    "SELECT album_titre, album_prix FROM albums INNER auteurs JOIN auteurs.auteur_id = albums._auteur_id;",
+    "SELECT * FROM albums WHERE album_prix > 50;",
+    "DELETE albums WHERE album_prix > 30;",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<ul>
+<li><strong>Option A ✗</strong> : INNER JOIN mal formé (INNER auteurs JOIN au lieu de INNER JOIN auteurs ON...).</li>
+<li><strong>Option B ✓</strong> : SELECT avec WHERE et comparateur > est correct.</li>
+<li><strong>Option C ✗</strong> : DELETE oublie FROM. Syntaxe : <code>DELETE FROM albums WHERE ...</code></li>
+</ul>`
+},
+{
+  num: 13,
+  text: "Dans la page table1_delete.php, on a le code suivant :\n$num_bd = $_GET['num_bd'];\nXXXXXXXXXX\n$bdd->query($req);\n\nQue peut-on écrire à la place des XXXXXXXX :",
+  options: [
+    "$req = 'DELETE FROM albums WHERE album_id='.$num_bd;",
+    "$req = 'DELETE FROM albums WHERE $num_bd='.album_id;",
+    "$requete = 'DELETE FROM albums WHERE album_id='.$num_bd;",
+    "$requete = 'DELETE FROM albums SET album_id='.$num_bd;",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0],
+  explication: `<ul>
+<li><strong>Option A ✓</strong> : Variable $req correspond à $bdd->query($req). Syntaxe DELETE correcte.</li>
+<li><strong>Option B ✗</strong> : $num_bd=album_id est inversé et sans quotes correctes.</li>
+<li><strong>Option C ✗</strong> : Variable $requete ne correspond pas à $bdd->query($req) — mauvais nom de variable.</li>
+<li><strong>Option D ✗</strong> : DELETE n'utilise pas SET (c'est UPDATE qui utilise SET).</li>
+</ul>`
+},
+{
+  num: 14,
+  text: "Dans votre site SAE203, quelles sont les propositions vraies :",
+  options: [
+    "il y a alors 2 clefs étrangères parmi toutes les tables",
+    "Il y avait 3 tables demandées dans le système de base de données",
+    "il y a alors 1 clef étrangère parmi toutes les tables",
+    "il y a alors 3 clefs étrangères parmi toutes les tables",
+    "Il y avait 2 tables demandées dans le système de base de données",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1, 2],
+  explication: `Dans ta SAE203 : 2 tables (marques + typesmode). La table typesmode a UNE clé étrangère : <code>id_marque</code> → marques. Donc : <strong>1 clé étrangère</strong> et <strong>2 tables</strong>. Attention : l'exam de l'an dernier mentionnait 3 tables — le tien n'en a que 2. Adapte ta réponse à ton propre projet.`
+},
+{
+  num: 15,
+  text: "Dans quelle page trouve-t-on la ligne :\n<input type=\"text\" value=\"<?php echo ...?>\" >",
+  options: [
+    "table1_new_form.php",
+    "table1_update_form.php",
+    "reponse_recherche.php",
+    "form_recherche.php",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<strong>table1_update_form.php ✓</strong> : c'est la page de <em>modification</em>. Elle charge les données existantes depuis la BDD et les pré-remplit dans les inputs avec <code>value="&lt;?= htmlspecialchars($m['nom']) ?&gt;"</code>. La page new_form n'a pas de value pré-rempli (c'est un ajout vide).`
+},
+{
+  num: 16,
+  text: "Soit l'extrait de code source suivant :",
+  code: `$tous = $bdd->query($requete);
+while($ligne == $tous->fetch() )   // ligne 6 — noter le ==
+{
+    echo '<tr><td>'.$ligne['album_titre'].'</td>';   // ligne 8
+    echo '<td>'.$ligne['album_prix'].'</td>';         // ligne 9
+    echo $ligne['auteur_nom'].'</td></tr>';           // ligne 10
+}`,
+  options: [
+    "il y a une erreur à la ligne 6",
+    "il y a une erreur à la ligne 8",
+    "il y a une erreur à la ligne 10",
+    "il y a une erreur à la ligne 9",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0],
+  explication: `<strong>Ligne 6 ✗</strong> : utilise <code>==</code> (comparaison) au lieu de <code>=</code> (affectation). Avec == on compare $ligne à fetch() sans jamais affecter la valeur → boucle infinie ou aucune itération. La bonne syntaxe est <code>while($ligne = $tous->fetch())</code>.`
+},
+{
+  num: 17,
+  text: "Soit l'extrait de code source suivant :",
+  code: `$num_bd = $_GET['num_bd'];
+$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'mm22h17', 'zet23AA');
+$req='SELECT * FROM albums INNER JOIN auteurs ON albums._auteur_id = auteurs.auteur_id WHERE album_id='.$num_bd;
+$resultat = $req->query($bdd);   // ligne 5
+$album = $resultat->fetch();`,
+  options: [
+    "ce code source se trouve dans la page table1_new_valide.php",
+    "il y a une erreur ligne 5",
+    "il y a une erreur ligne 7",
+    "il y a une erreur ligne 4",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<strong>Ligne 5 ✗</strong> : <code>$req->query($bdd)</code> est inversé. $req est une string, pas un objet PDO. La bonne syntaxe est <code>$resultat = $bdd->query($req)</code> — c'est l'objet PDO ($bdd) qui appelle query() avec la requête ($req) en paramètre.`
+},
+{
+  num: 18,
+  text: "Dans la page table1_new_valid.php :",
+  options: [
+    "on a une ligne de type: $req=\"UPDATE albums SET ....\";",
+    "on a une ligne de type: $req=\"SELECT * FROM albums ...\";",
+    "on a une ligne de type: $req=\"INSERT INTO albums VALUES(......)\";",
+    "on a une ligne de type: $titre=$_GET['titre'];",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [2, 3],
+  explication: `<ul>
+<li><strong>Option C ✓</strong> : table1_new_valide.php fait un INSERT pour ajouter une nouvelle marque.</li>
+<li><strong>Option D ✓</strong> : les données viennent du formulaire via $_POST (ou $_GET selon l'implémentation). Dans ton code c'est $_POST['nom'] etc.</li>
+<li><strong>Option A ✗</strong> : UPDATE c'est table1_update_valide.php.</li>
+<li><strong>Option B ✗</strong> : SELECT c'est table1_gestion.php ou update_form.</li>
+</ul>`
+},
+{
+  num: 19,
+  text: "Soit l'extrait de code source suivant :",
+  code: `$num_bd = $_GET['num_bd'];
+$bdd = new('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');  // ligne 3
+$req='SELECT * FROM albums INNER JOIN auteurs ON albums._auteur_id = auteurs.auteur_id WHERE album_id='.$num_bd;
+$resultat = $bdd->query(req);   // ligne 5 — noter : query(req) sans $
+$album = $resultat->fetch();`,
+  options: [
+    "il y a une erreur ligne 5",
+    "il manque une simple quote à la ligne 4",
+    "$_GET sert à récupérer num_bd passé dans l'URL",
+    "$_GET est une requête SQL de base",
+    "il y a une erreur ligne 3",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0, 2, 4],
+  explication: `<ul>
+<li><strong>Ligne 3 ✗</strong> : new sans PDO est invalide → erreur.</li>
+<li><strong>Ligne 5 ✗</strong> : <code>query(req)</code> sans $ → req est une constante non définie, pas la variable $req.</li>
+<li><strong>$_GET ✓</strong> : $_GET récupère bien les paramètres passés dans l'URL (méthode GET).</li>
+<li><strong>$_GET requête SQL ✗</strong> : $_GET est un tableau PHP superglobal, pas une requête SQL.</li>
+</ul>`
+},
+{
+  num: 20,
+  text: "Soit l'extrait de code source suivant :",
+  code: `$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'mmi22h17', 'zet23AA');
+$req2 = SELECT * FROM auteurs          // ligne 3 — pas de quotes
+$resultat2 = $bdd->query($req2);
+while( $un_auteur = $resultat2->fetch() ) {
+    echo ".$un_editeur['auteur_nom'].";  // ligne 6 — mauvaise variable
+}`,
+  options: [
+    "il y a une erreur à la ligne 4",
+    "il y a une erreur à la ligne 6",
+    "il y a une erreur à la ligne 3",
+    "il n'y a pas d'erreur",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1, 2],
+  explication: `<ul>
+<li><strong>Ligne 3 ✗</strong> : la requête SQL n'est pas entre quotes. Il faut <code>$req2 = 'SELECT * FROM auteurs';</code></li>
+<li><strong>Ligne 6 ✗</strong> : la variable utilisée est <code>$un_editeur</code> alors que la boucle déclare <code>$un_auteur</code>. Variable non définie.</li>
+</ul>`
+}
+];
+
+// ─── PRÉVISIONS — QCM basé sur ton code SAE203 ──────────────────────────────
+const PREVISIONS = [
+{
+  hot: 'hot', num: 1,
+  text: "Dans ta page table1_update_valide.php, quel type de requête SQL trouve-t-on ?",
+  options: [
+    "SELECT * FROM marques WHERE id_marque = ?",
+    "INSERT INTO marques (nom, pays, ...) VALUES (?, ?, ...)",
+    "UPDATE marques SET nom=?, pays=?, ... WHERE id_marque=?",
+    "DELETE FROM marques WHERE id_marque = ?",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [2],
+  explication: `<strong>UPDATE ✓</strong> : table1_update_valide.php reçoit les données du formulaire de modification ($_POST) et met à jour la ligne existante.<ul>
+<li>INSERT → c'est table1_new_valide.php (ajout)</li>
+<li>SELECT → c'est table1_update_form.php (pour pré-remplir)</li>
+<li>DELETE → c'est table1_delete.php</li></ul>`
+},
+{
+  hot: 'hot', num: 2,
+  text: "Soit le code suivant, quelle est l'erreur ?\n$resultat = $req->query($pdo);",
+  options: [
+    "Il manque des guillemets autour de $req",
+    "$req est une string, elle n'a pas de méthode query() — il faut $pdo->query($req)",
+    "Il faut écrire $pdo->execute($req) à la place",
+    "Il n'y a pas d'erreur",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<strong>Option B ✓</strong> : C'est <strong>l'objet PDO</strong> ($pdo) qui possède la méthode query(), pas la variable $req qui est une simple chaîne de caractères. La syntaxe correcte est toujours :<br><code>$resultat = $pdo->query($req);</code><br>$pdo = la connexion → appelle la méthode. $req = la requête SQL → passée en paramètre.`
+},
+{
+  hot: 'hot', num: 3,
+  text: "Dans ton SAE203, quelles sont les propositions vraies concernant la base de données :",
+  options: [
+    "Il y a 3 tables dans la base",
+    "Il y a 2 tables dans la base (marques et typesmode)",
+    "Il y a 1 clé étrangère (id_marque dans typesmode)",
+    "Il y a 2 clés étrangères",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1, 2],
+  explication: `<ul>
+<li><strong>2 tables ✓</strong> : marques et typesmode.</li>
+<li><strong>1 clé étrangère ✓</strong> : id_marque dans typesmode référence marques(id_marque). C'est une relation 1,n : une marque peut avoir plusieurs types de mode.</li>
+<li><strong>3 tables ✗</strong> : ton projet n'en a que 2.</li>
+<li><strong>2 clés étrangères ✗</strong> : il n'y en a qu'une.</li></ul>`
+},
+{
+  hot: 'hot', num: 4,
+  text: "Quand on tape 'Dior' dans form_recherche.php et qu'on valide, quelle URL apparaît dans le navigateur ?",
+  options: [
+    "reponse_recherche.php?nom=Dior",
+    "reponse_recherche.php?auteur=Dior",
+    "reponse_recherche.php?texte=Dior",
+    "listing.php?texte=Dior",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [2],
+  explication: `<strong>reponse_recherche.php?texte=Dior ✓</strong> : ton formulaire a <code>action="reponse_recherche.php" method="get"</code> et le champ input a <code>name="texte"</code>. En méthode GET, le nom du champ devient le paramètre dans l'URL. "auteur" et "nom" sont faux car ce n'est pas le name de ton input.`
+},
+{
+  hot: 'hot', num: 5,
+  text: "Soit le code suivant :\nwhile($ligne == $pdo->fetch()) { echo $ligne['nom']; }\nQuelle est l'erreur ?",
+  options: [
+    "Il faut utiliser foreach à la place de while",
+    "== est une comparaison, pas une affectation — il faut un seul =",
+    "$ligne n'est pas déclaré avant le while",
+    "fetch() ne s'appelle pas sur $pdo mais sur le résultat de la requête",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1, 3],
+  explication: `<ul>
+<li><strong>== ✗</strong> : double égal = comparaison. La valeur de fetch() n'est jamais affectée à $ligne → la boucle ne lit rien. Il faut <code>=</code> (affectation).</li>
+<li><strong>fetch() sur $pdo ✗</strong> : fetch() s'appelle sur le résultat de query() ou prepare()/execute(). Ex : <code>$stmt = $pdo->query(...); while($ligne = $stmt->fetch())</code>.</li></ul>`
+},
+{
+  hot: 'med', num: 6,
+  text: "Dans quelle page de ton SAE203 trouve-t-on un input avec value pré-rempli depuis la BDD ?\n<input type=\"text\" name=\"nom\" value=\"<?= htmlspecialchars($m['nom']) ?>\">",
+  options: [
+    "table1_new_form.php",
+    "form_recherche.php",
+    "table1_update_form.php",
+    "table1_gestion.php",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [2],
+  explication: `<strong>table1_update_form.php ✓</strong> : cette page charge d'abord la marque existante avec un SELECT, puis affiche un formulaire avec les champs pré-remplis (value=). C'est le principe de la modification. table1_new_form est un formulaire vide pour l'ajout.`
+},
+{
+  hot: 'med', num: 7,
+  text: "Quel est le MLD correct de ta SAE203 ?",
+  options: [
+    "marques(id_marque, nom, ...) — typesmode(id_type, nom_type, prix_moyen, #id_marque)",
+    "marques(id_marque, nom, ..., #id_type) — typesmode(id_type, nom_type, prix_moyen)",
+    "marques(id_marque, nom, ...) — typesmode(id_type, nom_type, prix_moyen) — appartenir(#id_marque, #id_type)",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0],
+  explication: `<strong>Option A ✓</strong> : relation 1,n entre marques et typesmode. Une marque a plusieurs types → la clé étrangère #id_marque va dans la table typesmode (côté "plusieurs").<ul>
+<li>Option B ✗ : la clé étrangère serait dans marques, ce qui signifierait qu'un type a plusieurs marques (inversé).</li>
+<li>Option C ✗ : une table de jonction s'utilise pour du many-to-many. Ici c'est 1,n, pas besoin de table intermédiaire.</li></ul>`
+},
+{
+  hot: 'med', num: 8,
+  text: "Dans ta page listing.php, quel type de JOIN est utilisé et pourquoi ?",
+  options: [
+    "INNER JOIN — pour n'afficher que les marques qui ont au moins un type",
+    "LEFT JOIN — pour afficher toutes les marques, même celles sans type associé",
+    "RIGHT JOIN — pour afficher tous les types même sans marque",
+    "Il n'y a pas de JOIN dans listing.php",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<strong>LEFT JOIN ✓</strong> : ton code fait <code>FROM marques m LEFT JOIN typesmode t ON m.id_marque = t.id_marque</code>. Le LEFT JOIN conserve toutes les lignes de la table de gauche (marques) même si aucun type n'est associé. Un INNER JOIN exclurait les marques sans type.`
+},
+{
+  hot: 'med', num: 9,
+  text: "Quelle est la différence entre $pdo->query() et $pdo->prepare() dans ton code ?",
+  options: [
+    "query() est plus rapide, prepare() est plus lent — c'est la seule différence",
+    "prepare() sécurise les requêtes avec des paramètres (anti-injection SQL), query() est pour les requêtes fixes sans données utilisateur",
+    "query() accepte des paramètres avec ?, prepare() non",
+    "Il n'y a aucune différence fonctionnelle",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<strong>Option B ✓</strong> : <code>prepare()</code> + execute() protège contre les injections SQL en échappant automatiquement les valeurs. <code>query()</code> exécute directement la requête sans protection — à utiliser uniquement quand il n'y a pas de données venant de l'utilisateur (pas de $_GET ni $_POST dans la requête).`
+},
+{
+  hot: 'low', num: 10,
+  text: "Dans ta page table1_delete.php, comment l'ID de la marque à supprimer est-il récupéré ?",
+  options: [
+    "Via $_POST['id'] car le formulaire envoie en POST",
+    "Via $_GET['id'] car le lien de suppression passe l'id dans l'URL",
+    "Via $_SESSION['id'] stocké lors de la connexion",
+    "Il est écrit en dur dans le code",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [1],
+  explication: `<strong>$_GET['id'] ✓</strong> : dans table1_gestion.php le lien de suppression est <code>href="table1_delete.php?id=..."</code>. L'ID est donc passé dans l'URL (méthode GET). table1_delete.php le récupère avec <code>$id = (int) $_GET['id']</code>.`
+},
+{
+  hot: 'low', num: 11,
+  text: "Quelles requêtes SQL sont sans erreur de syntaxe :",
+  options: [
+    "SELECT * FROM marques WHERE nom LIKE '%dior%';",
+    "UPDATE FROM marques SET nom='Test' WHERE id_marque=1;",
+    "DELETE marques WHERE id_marque=5;",
+    "INSERT INTO marques (nom, pays) VALUES ('Hermès', 'France');",
+    "Aucune de ces réponses n'est correcte"
+  ],
+  correct: [0, 3],
+  explication: `<ul>
+<li><strong>A ✓</strong> : SELECT avec LIKE et wildcard %, syntaxe correcte.</li>
+<li><strong>B ✗</strong> : UPDATE n'utilise pas FROM. Correct : <code>UPDATE marques SET ... WHERE ...</code></li>
+<li><strong>C ✗</strong> : DELETE oublie FROM. Correct : <code>DELETE FROM marques WHERE ...</code></li>
+<li><strong>D ✓</strong> : INSERT INTO avec colonnes et VALUES, syntaxe correcte.</li></ul>`
+}
+];
+
+// ─── RENDU QCM ────────────────────────────────────────────────────────────────
+let scores = {};
+
+function buildQCM() {
+  const container = document.getElementById('qcm-container');
+  QCM.forEach((q, qi) => {
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = 'q-' + qi;
+
+    const codeBlock = q.code ? `<div class="q-code">${escHtml(q.code)}</div>` : '';
+    const textFormatted = q.text.replace(/\n/g, '<br>');
+
+    let optionsHtml = q.options.map((opt, oi) => {
+      const hasCode = opt.includes('$') || opt.includes('SELECT') || opt.includes('UPDATE') || opt.includes('DELETE') || opt.includes('INSERT');
+      const labelClass = hasCode ? 'opt-label opt-code' : 'opt-label';
+      return `<label class="opt" id="opt-${qi}-${oi}">
+        <input type="checkbox" name="q${qi}" value="${oi}" id="cb-${qi}-${oi}">
+        <span class="${labelClass}">${escHtml(opt)}</span>
+      </label>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-num">Question ${q.num}</div>
+        <div class="q-text">${textFormatted}${codeBlock}</div>
+      </div>
+      <div class="q-options">${optionsHtml}</div>
+      <div class="q-actions">
+        <button class="btn-valider" onclick="valider(${qi})">Valider</button>
+        <button class="btn-reset-q" id="reset-${qi}" onclick="resetQ(${qi})">Recommencer</button>
+      </div>
+      <div class="q-explication" id="exp-${qi}"></div>
+    `;
+    container.appendChild(card);
+  });
+  updateScore();
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function valider(qi) {
+  const q = QCM[qi];
+  const checked = [];
+  q.options.forEach((_, oi) => {
+    if (document.getElementById(`cb-${qi}-${oi}`).checked) checked.push(oi);
+  });
+
+  // Coloriser les options
+  q.options.forEach((_, oi) => {
+    const optEl = document.getElementById(`opt-${qi}-${oi}`);
+    const isCorrect = q.correct.includes(oi);
+    const isChecked = checked.includes(oi);
+    optEl.classList.remove('correct-answer','wrong-selected','missed-answer');
+    if (isCorrect) optEl.classList.add('correct-answer');
+    else if (isChecked && !isCorrect) optEl.classList.add('wrong-selected');
+  });
+  // Missed (bonne réponse non cochée)
+  q.correct.forEach(ci => {
+    if (!checked.includes(ci)) {
+      document.getElementById(`opt-${qi}-${ci}`).classList.add('missed-answer');
+    }
+  });
+
+  // Correct ?
+  const isOk = JSON.stringify([...checked].sort()) === JSON.stringify([...q.correct].sort());
+  scores[qi] = isOk;
+
+  const card = document.getElementById('q-' + qi);
+  card.classList.remove('answered-ok','answered-ko');
+  card.classList.add(isOk ? 'answered-ok' : 'answered-ko');
+
+  const exp = document.getElementById('exp-' + qi);
+  exp.classList.add('visible');
+  exp.innerHTML = `<span class="${isOk ? 'result-ok' : 'result-ko'}">${isOk ? '✓ Bonne réponse !' : '✗ Mauvaise réponse'}</span>${q.explication}`;
+
+  // Désactiver les checkboxes
+  q.options.forEach((_, oi) => {
+    document.getElementById(`cb-${qi}-${oi}`).disabled = true;
+  });
+  card.querySelector('.btn-valider').disabled = true;
+  document.getElementById(`reset-${qi}`).classList.add('visible');
+
+  updateScore();
+}
+
+function resetQ(qi) {
+  const q = QCM[qi];
+  const card = document.getElementById('q-' + qi);
+  card.classList.remove('answered-ok','answered-ko');
+  q.options.forEach((_, oi) => {
+    const cb = document.getElementById(`cb-${qi}-${oi}`);
+    cb.checked = false; cb.disabled = false;
+    const opt = document.getElementById(`opt-${qi}-${oi}`);
+    opt.classList.remove('correct-answer','wrong-selected','missed-answer');
+  });
+  document.getElementById('exp-' + qi).classList.remove('visible');
+  card.querySelector('.btn-valider').disabled = false;
+  document.getElementById('reset-' + qi).classList.remove('visible');
+  delete scores[qi];
+  updateScore();
+}
+
+function resetAll() {
+  QCM.forEach((_, qi) => { if (document.getElementById('q-'+qi).classList.contains('answered-ok') || document.getElementById('q-'+qi).classList.contains('answered-ko')) resetQ(qi); });
+  scores = {};
+  updateScore();
+}
+
+function updateScore() {
+  const total = Object.keys(scores).length;
+  const ok = Object.values(scores).filter(Boolean).length;
+  document.getElementById('score-display').textContent = ok + ' / ' + total + ' validées (' + QCM.length + ' total)';
+}
+
+// ─── RENDU PRÉVISIONS QCM ────────────────────────────────────────────────────
+let scoresPrev = {};
+const hotLabels = {hot:'🔴 HOT', med:'🟡 Probable', low:'🟢 Possible'};
+
+function buildPrev() {
+  const container = document.getElementById('prev-container');
+  PREVISIONS.forEach((q, qi) => {
+    const pid = 'p-' + qi;
+    const card = document.createElement('div');
+    card.className = 'q-card';
+    card.id = pid;
+
+    const textFormatted = q.text.replace(/\n/g, '<br>');
+
+    let optionsHtml = q.options.map((opt, oi) => {
+      const hasCode = opt.includes('$') || opt.includes('SELECT') || opt.includes('UPDATE') || opt.includes('DELETE') || opt.includes('INSERT') || opt.includes('->') || opt.includes('marques(');
+      const labelClass = hasCode ? 'opt-label opt-code' : 'opt-label';
+      return `<label class="opt" id="popt-${qi}-${oi}">
+        <input type="checkbox" name="p${qi}" value="${oi}" id="pcb-${qi}-${oi}">
+        <span class="${labelClass}">${escHtml(opt)}</span>
+      </label>`;
+    }).join('');
+
+    card.innerHTML = `
+      <div class="q-header">
+        <div class="q-num"><span style="background:rgba(184,85,80,0.12);color:var(--${q.hot==='hot'?'red':q.hot==='med'?'accent':'green'});padding:0.15rem 0.5rem;border-radius:4px;font-size:0.6rem;margin-right:0.5rem">${hotLabels[q.hot]}</span>Prévision ${q.num}</div>
+        <div class="q-text">${textFormatted}</div>
+      </div>
+      <div class="q-options">${optionsHtml}</div>
+      <div class="q-actions">
+        <button class="btn-valider" onclick="validerPrev(${qi})">Valider</button>
+        <button class="btn-reset-q" id="preset-${qi}" onclick="resetPrev(${qi})">Recommencer</button>
+      </div>
+      <div class="q-explication" id="pexp-${qi}"></div>
+    `;
+    container.appendChild(card);
+  });
+  updateScorePrev();
+}
+
+function validerPrev(qi) {
+  const q = PREVISIONS[qi];
+  const checked = [];
+  q.options.forEach((_, oi) => {
+    if (document.getElementById(`pcb-${qi}-${oi}`).checked) checked.push(oi);
+  });
+  q.options.forEach((_, oi) => {
+    const optEl = document.getElementById(`popt-${qi}-${oi}`);
+    const isCorrect = q.correct.includes(oi);
+    const isChecked = checked.includes(oi);
+    optEl.classList.remove('correct-answer','wrong-selected','missed-answer');
+    if (isCorrect) optEl.classList.add('correct-answer');
+    else if (isChecked && !isCorrect) optEl.classList.add('wrong-selected');
+  });
+  q.correct.forEach(ci => {
+    if (!checked.includes(ci)) document.getElementById(`popt-${qi}-${ci}`).classList.add('missed-answer');
+  });
+  const isOk = JSON.stringify([...checked].sort()) === JSON.stringify([...q.correct].sort());
+  scoresPrev[qi] = isOk;
+  const card = document.getElementById('p-' + qi);
+  card.classList.remove('answered-ok','answered-ko');
+  card.classList.add(isOk ? 'answered-ok' : 'answered-ko');
+  const exp = document.getElementById('pexp-' + qi);
+  exp.classList.add('visible');
+  exp.innerHTML = `<span class="${isOk ? 'result-ok' : 'result-ko'}">${isOk ? '✓ Bonne réponse !' : '✗ Mauvaise réponse'}</span>${q.explication}`;
+  q.options.forEach((_, oi) => { document.getElementById(`pcb-${qi}-${oi}`).disabled = true; });
+  card.querySelector('.btn-valider').disabled = true;
+  document.getElementById(`preset-${qi}`).classList.add('visible');
+  updateScorePrev();
+}
+
+function resetPrev(qi) {
+  const q = PREVISIONS[qi];
+  const card = document.getElementById('p-' + qi);
+  card.classList.remove('answered-ok','answered-ko');
+  q.options.forEach((_, oi) => {
+    const cb = document.getElementById(`pcb-${qi}-${oi}`);
+    cb.checked = false; cb.disabled = false;
+    document.getElementById(`popt-${qi}-${oi}`).classList.remove('correct-answer','wrong-selected','missed-answer');
+  });
+  document.getElementById('pexp-' + qi).classList.remove('visible');
+  card.querySelector('.btn-valider').disabled = false;
+  document.getElementById(`preset-${qi}`).classList.remove('visible');
+  delete scoresPrev[qi];
+  updateScorePrev();
+}
+
+function resetAllPrev() {
+  PREVISIONS.forEach((_, qi) => { if (scoresPrev[qi] !== undefined) resetPrev(qi); });
+  scoresPrev = {};
+  updateScorePrev();
+}
+
+function updateScorePrev() {
+  const total = Object.keys(scoresPrev).length;
+  const ok = Object.values(scoresPrev).filter(Boolean).length;
+  document.getElementById('score-display-prev').textContent = ok + ' / ' + total + ' validées (' + PREVISIONS.length + ' total)';
+}
+
+buildQCM();
+buildPrev();
+</script>
+</body>
+</html>
