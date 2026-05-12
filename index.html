@@ -87,17 +87,17 @@ nav::-webkit-scrollbar{display:none;}
 .q-num{font-size:0.6rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);margin-bottom:0.35rem;}
 .q-text{font-size:0.84rem;line-height:1.55;color:var(--text);}
 
-/* CODE BLOCK dans question */
+/* CODE BLOCK dans question — avec numéros de ligne */
 .q-code{
   background:var(--s3);border:1px solid var(--border2);
-  border-radius:8px;padding:0.65rem 0.85rem;
-  font-family:'DM Mono',monospace;
-  font-size:0.68rem;
-  line-height:1.7;color:var(--accent2);
-  overflow-x:auto;white-space:pre;
+  border-radius:8px;
   margin:0.65rem 0 0;
+  overflow-x:auto;
   -webkit-overflow-scrolling:touch;
 }
+.q-code table{border-collapse:collapse;width:100%;font-family:'DM Mono',monospace;font-size:0.68rem;line-height:1.75;}
+.q-code .ln{padding:0 0.55rem 0 0.65rem;color:var(--muted);text-align:right;user-select:none;border-right:1px solid var(--border);width:1%;white-space:nowrap;}
+.q-code .lc{padding:0 0.85rem;color:var(--accent2);white-space:pre;}
 
 /* OPTIONS */
 .q-options{padding:0.4rem 0.85rem 0.85rem;display:flex;flex-direction:column;gap:0.35rem;}
@@ -250,14 +250,17 @@ const QCM = [
 {
   num: 1,
   text: "Soit l'extrait de code source suivant :",
-  code: `<?php
-$bdd = new ('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');
-$req2='SELECT * FROM editeurs';
-$resultat2 = $bdd->requete($req2);
-while( $un_editeur = $resultat2->fetch() ) {
-    echo '<option value="'.$un_editeur['auteur_id'].'">'.$un_editeur['auteur_nom'].'</option>';
-}
-?>`,
+  lines: [
+    "...",
+    "<?php",
+    "$bdd = new ('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');",
+    "$req2='SELECT * FROM editeurs';",
+    "$resultat2 = $bdd->requete($req2);",
+    "while( $un_editeur = $resultat2->fetch() ) {",
+    "    echo '<option value=\"'.$un_editeur['auteur_id'].'\">'.$un_editeur['auteur_nom'].'</option>';",
+    "}",
+    "?>"
+  ],
   options: [
     "ce type de code se trouve dans la page reponse_recherche.php",
     "ce type de code se trouve dans la page table1_gestion.php",
@@ -288,35 +291,24 @@ while( $un_editeur = $resultat2->fetch() ) {
 {
   num: 3,
   text: "Soit l'extrait de code source suivant :",
-  code: `$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');
-$requete = 'SELECT album_titre,album_prix,auteur_nom FROM albums INNER JOIN auteurs ON auteurs.auteur_id = albums._auteur_id';
-$tous = $bdd->query($requete);
-while($ligne = $bdd->fetch() )   // ligne 6
-{
-    echo '<tr><td>'.$ligne['album_titre'].'</td>...';
-}`,
+  lines: [
+    "...",
+    "$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');",
+    "$requete = 'SELECT album_titre,album_prix,auteur_nom FROM albums INNER JOIN auteurs ON auteurs.auteur_id = albums._auteur_id';",
+    "$tous = $bdd->query($requete);",
+    "while($ligne = $bdd->fetch() )",
+    "{",
+    "    echo '<tr><td>'.$ligne['album_titre'].'</td>...';",
+    "}"
+  ],
   options: [
     "il y a une erreur à la ligne 8",
     "il n'y a pas d'erreur de syntaxe",
-    "il y a une erreur à la ligne 6",
+    "il y a une erreur à la ligne 5",
     "Aucune de ces réponses n'est correcte"
   ],
   correct: [2],
-  explication: `<strong>Ligne 6 ✗</strong> : on appelle <code>$bdd->fetch()</code> alors que fetch() s'appelle sur le <strong>résultat</strong> de la requête. Il faut <code>$tous->fetch()</code>. <code>$bdd</code> est la connexion PDO, pas le résultat.`
-},
-{
-  num: 4,
-  text: "Dans l'analyse de cours, soit le schéma en annexe 1 (relation album ↔ auteur avec table de jonction) :",
-  options: [
-    "en A: 1,1 et en B: 1,1",
-    "en A: 1,1 et en B: 1,n",
-    "en A: 1,n et en B: 0,n",
-    "en A: 0,n et en B: 1,n",
-    "en A: 1,n et en B: 1,1",
-    "Aucune de ces réponses n'est correcte"
-  ],
-  correct: [2],
-  explication: `Dans une relation album ↔ auteur (many-to-many via table de jonction) : un auteur peut créer <strong>plusieurs albums</strong> (1,n) et un album peut être créé par <strong>0 ou plusieurs auteurs</strong> (0,n). La cardinalité 1,n / 0,n est classique pour ce type de relation.`
+  explication: `<strong>Ligne 5 ✗</strong> : on appelle <code>$bdd->fetch()</code> alors que fetch() s'appelle sur le <strong>résultat</strong> de la requête. Il faut <code>$tous->fetch()</code>. <code>$bdd</code> est la connexion PDO, pas le résultat.`
 },
 {
   num: 5,
@@ -346,30 +338,6 @@ while($ligne = $bdd->fetch() )   // ligne 6
 <li><strong>form_recherche.php ✗</strong> : c'est juste un formulaire HTML, aucune requête SQL.</li>
 <li><strong>reponse_recherche.php ✗</strong> : contient un SELECT (recherche LIKE), pas un INSERT.</li>
 </ul>`
-},
-{
-  num: 7,
-  text: "Soit le schéma en annexe 2, quel est le MLD correspondant :",
-  options: [
-    "apparternir(#art_ref, #car_code) / fournisseurs(four_code,...) / article(art_ref,...,#four_code,#cat_code) / disposer(#art_ref,#mag_code,art_stock) / magasins(mag_code,mag_nom,mag_surf,#art_ref)",
-    "en A: la cardinalité est 0,N",
-    "en A: la cardinalité est 1,1",
-    "disposer(#dispo_code,art_stock) / magasins(mag_code,...) / categories(cat_code,cat_lib) / categories(cat_code,cat_lib,#art_ref) / article(art_ref,...,#four_code,#cat_code,#mag_code) / fournisseurs(four_code,...,#art_ref)",
-    "Aucune de ces réponses n'est correcte"
-  ],
-  correct: [0],
-  explication: `Dans un MLD : une relation many-to-many génère une table de jonction avec les deux clés étrangères. <strong>disposer(#art_ref, #mag_code, art_stock)</strong> est correct pour stocker le stock par article ET par magasin. La clé étrangère de magasin ne va pas dans la table article (ce serait une relation 1-n, pas n-n).`
-},
-{
-  num: 8,
-  text: "Soit le schéma en annexe 1 (en retrouvant les cardinalités), quel est le MLD correspondant :",
-  options: [
-    "album(bd_id,...,#auteur_id) / auteur(auteur_id,...,#bd_id)",
-    "creer(#bd_id,#auteur_id) / auteur(auteur_id,...) / album(bd_id,...)",
-    "Aucune de ces réponses n'est correcte"
-  ],
-  correct: [1],
-  explication: `Relation <strong>many-to-many</strong> entre album et auteur → table de jonction <code>creer(#bd_id, #auteur_id)</code>. Les deux tables album et auteur n'ont pas de clé étrangère l'une vers l'autre. Si on met #auteur_id dans album, ça implique qu'un album n'a qu'un auteur (1-n), ce qui est faux ici.`
 },
 {
   num: 9,
@@ -481,35 +449,41 @@ while($ligne = $bdd->fetch() )   // ligne 6
 {
   num: 16,
   text: "Soit l'extrait de code source suivant :",
-  code: `$tous = $bdd->query($requete);
-while($ligne == $tous->fetch() )   // ligne 6 — noter le ==
-{
-    echo '<tr><td>'.$ligne['album_titre'].'</td>';   // ligne 8
-    echo '<td>'.$ligne['album_prix'].'</td>';         // ligne 9
-    echo $ligne['auteur_nom'].'</td></tr>';           // ligne 10
-}`,
+  lines: [
+    "...",
+    "$tous = $bdd->query($requete);",
+    "while($ligne == $tous->fetch() )",
+    "{",
+    "    echo '<tr><td>'.$ligne['album_titre'].'</td>';",
+    "    echo '<td>'.$ligne['album_prix'].'</td>';",
+    "    echo $ligne['auteur_nom'].'</td></tr>';",
+    "}"
+  ],
   options: [
+    "il y a une erreur à la ligne 3",
+    "il y a une erreur à la ligne 5",
+    "il y a une erreur à la ligne 7",
     "il y a une erreur à la ligne 6",
-    "il y a une erreur à la ligne 8",
-    "il y a une erreur à la ligne 10",
-    "il y a une erreur à la ligne 9",
     "Aucune de ces réponses n'est correcte"
   ],
   correct: [0],
-  explication: `<strong>Ligne 6 ✗</strong> : utilise <code>==</code> (comparaison) au lieu de <code>=</code> (affectation). Avec == on compare $ligne à fetch() sans jamais affecter la valeur → boucle infinie ou aucune itération. La bonne syntaxe est <code>while($ligne = $tous->fetch())</code>.`
+  explication: `<strong>Ligne 3 ✗</strong> : utilise <code>==</code> (comparaison) au lieu de <code>=</code> (affectation). Avec == on compare $ligne à fetch() sans jamais affecter la valeur → boucle infinie ou aucune itération. La bonne syntaxe est <code>while($ligne = $tous->fetch())</code>.`
 },
 {
   num: 17,
   text: "Soit l'extrait de code source suivant :",
-  code: `$num_bd = $_GET['num_bd'];
-$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'mm22h17', 'zet23AA');
-$req='SELECT * FROM albums INNER JOIN auteurs ON albums._auteur_id = auteurs.auteur_id WHERE album_id='.$num_bd;
-$resultat = $req->query($bdd);   // ligne 5
-$album = $resultat->fetch();`,
+  lines: [
+    "...",
+    "$num_bd = $_GET['num_bd'];",
+    "$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'mm22h17', 'zet23AA');",
+    "$req='SELECT * FROM albums INNER JOIN auteurs ON albums._auteur_id = auteurs.auteur_id WHERE album_id='.$num_bd;",
+    "$resultat = $req->query($bdd);",
+    "$album = $resultat->fetch();"
+  ],
   options: [
     "ce code source se trouve dans la page table1_new_valide.php",
     "il y a une erreur ligne 5",
-    "il y a une erreur ligne 7",
+    "il y a une erreur ligne 6",
     "il y a une erreur ligne 4",
     "Aucune de ces réponses n'est correcte"
   ],
@@ -537,11 +511,14 @@ $album = $resultat->fetch();`,
 {
   num: 19,
   text: "Soit l'extrait de code source suivant :",
-  code: `$num_bd = $_GET['num_bd'];
-$bdd = new('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');  // ligne 3
-$req='SELECT * FROM albums INNER JOIN auteurs ON albums._auteur_id = auteurs.auteur_id WHERE album_id='.$num_bd;
-$resultat = $bdd->query(req);   // ligne 5 — noter : query(req) sans $
-$album = $resultat->fetch();`,
+  lines: [
+    "...",
+    "$num_bd = $_GET['num_bd'];",
+    "$bdd = new('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'root', 'root');",
+    "$req='SELECT * FROM albums INNER JOIN auteurs ON albums._auteur_id = auteurs.auteur_id WHERE album_id='.$num_bd;",
+    "$resultat = $bdd->query(req);",
+    "$album = $resultat->fetch();"
+  ],
   options: [
     "il y a une erreur ligne 5",
     "il manque une simple quote à la ligne 4",
@@ -561,12 +538,15 @@ $album = $resultat->fetch();`,
 {
   num: 20,
   text: "Soit l'extrait de code source suivant :",
-  code: `$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'mmi22h17', 'zet23AA');
-$req2 = SELECT * FROM auteurs          // ligne 3 — pas de quotes
-$resultat2 = $bdd->query($req2);
-while( $un_auteur = $resultat2->fetch() ) {
-    echo ".$un_editeur['auteur_nom'].";  // ligne 6 — mauvaise variable
-}`,
+  lines: [
+    "...",
+    "$bdd = new PDO('mysql:host=localhost;dbname=s2mmi;charset=utf8', 'mmi22h17', 'zet23AA');",
+    "$req2 = SELECT * FROM auteurs",
+    "$resultat2 = $bdd->query($req2);",
+    "while( $un_auteur = $resultat2->fetch() ) {",
+    "    echo \".$un_editeur['auteur_nom'].\";",
+    "}"
+  ],
   options: [
     "il y a une erreur à la ligne 4",
     "il y a une erreur à la ligne 6",
@@ -753,7 +733,14 @@ function buildQCM() {
     card.className = 'q-card';
     card.id = 'q-' + qi;
 
-    const codeBlock = q.code ? `<div class="q-code">${escHtml(q.code)}</div>` : '';
+    let codeBlock = '';
+    if (q.lines) {
+      const rows = q.lines.map(function(l, i) {
+        const esc = l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return '<tr><td class="ln">' + (i+1) + '</td><td class="lc">' + esc + '</td></tr>';
+      }).join('');
+      codeBlock = '<div class="q-code"><table>' + rows + '</table></div>';
+    }
     const textFormatted = q.text.replace(/\n/g, '<br>');
 
     let optionsHtml = q.options.map((opt, oi) => {
